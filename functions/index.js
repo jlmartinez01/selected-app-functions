@@ -3,20 +3,16 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp();
 
-exports.notificacionMensaje = functions.database.ref('/messages/{usu_local}/{usu_no_local}')
-    .onUpdate(async (change, context) => {
-      const usu_local = context.params.usu_local;
-      const usu_no_local = context.params.usu_no_local;
+exports.notificacionMensaje = functions.database.ref('/notificationsChat/{id_notification}/')
+    .onCreate(async (change, context) => {
+      const id_notification = context.params.id_notification;
 
-      const payload = {
-        notification: {
-          title: 'You have a new follower!',
-          body: `is now following you.`,
-        }
-      };
-
-      admin.messaging().sendToDevice('fP8byLGN2pw:APA91bF_72Gfx5SsFAeWiEgrKbStTjTuSVN4sJJgT6h4fBwL7XIUa-R1piz7oyUbsnZP_0Mz5ve6QAEkNPybKSNaGJp_gKbczUjJxwk9sHtSg1eCsh0Susq_iQD-gYMV4E1m5xmdm8mp', payload);
-
-
+      console.log(id_notification)
+      admin.database().ref('notificationsChat/'+id_notification).on("value", function(snapshot) {
+        console.log(snapshot.val());
+        admin.messaging().sendToDevice(snapshot.val().notificationToUser.token_dispositivo, snapshot.val().notificationBody);
+      }, function (errorObject) {
+        console.log("The read failed: " + errorObject.code);
+      });
 
     })
